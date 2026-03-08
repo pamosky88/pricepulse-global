@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Price Comparison Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .search-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 0.875rem 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-btn {
+            padding: 0.875rem 2rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            white-space: nowrap;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        .results-container {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .results-container.show {
+            display: block;
+        }
+
+        .product-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 12px;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .prices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .price-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .price-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .price-card.cheapest {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .cheapest-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.35rem 0.875rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .country-flag {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .country-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .country-code {
+            font-size: 0.875rem;
+            color: #718096;
+            margin-bottom: 1rem;
+        }
+
+        .price-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .currency {
+            font-size: 0.875rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .price-comparison {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+
+        .savings {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .expensive {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .chart-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .chart-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+            border-radius: 4px;
+            transition: width 0.8s ease-out;
+        }
+
+        .chart-fill.cheapest-fill {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            color: #991b1b;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.75rem;
+            vertical-align: middle;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .suggestions {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .suggestions-label {
+            font-size: 0.875rem;
+            color: #718096;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .suggestion-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .suggestion-pill {
+            padding: 0.5rem 1rem;
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: #3b82f6;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-pill:hover {
+            background: #dbeafe;
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.875rem;
+            }
+
+            .prices-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="emoji">💰</div>
+            <h1>Global Price Comparison</h1>
+            <p>Check real product prices worldwide instantly</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput" 
+                    placeholder="Search: iPhone, MacBook, PlayStation 5..."
+                    autocomplete="off"
+                >
+                <button class="search-btn" id="searchBtn">Search</button>
+            </div>
+
+            <div class="suggestions">
+                <div class="suggestions-label">Popular searches:</div>
+                <div class="suggestion-pills">
+                    <span class="suggestion-pill" data-search="iPhone 15">iPhone 15</span>
+                    <span class="suggestion-pill" data-search="MacBook Pro">MacBook Pro</span>
+                    <span class="suggestion-pill" data-search="PlayStation 5">PlayStation 5</span>
+                    <span class="suggestion-pill" data-search="Samsung Galaxy S24">Galaxy S24</span>
+                    <span class="suggestion-pill" data-search="iPad Air">iPad Air</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer"></div>
+    </div>
+
+    <script>
+        // Global price database (simulated with real-world approximate prices)
+        const priceDatabase = {
+            'iphone 15': {
+                product: 'iPhone 15',
+                prices: {
+                    'USA': { price: 799, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 749, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 599000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 1099, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 119800, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 949, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 79900, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 4999, currency: 'BRL', flag: '🇧🇷' }
+                }
+            },
+            'macbook pro': {
+                product: 'MacBook Pro 16"',
+                prices: {
+                    'USA': { price: 2499, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 2349, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 1999000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 3399, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 398000, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 2999, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 199900, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 12999, currency: 'BRL', flag: '🇧🇷' }
+                }
+            },
+            'playstation 5': {
+                product: 'PlayStation 5',
+                prices: {
+                    'USA': { price: 499, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 469, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 399000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 649, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 60478, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 549, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 49990, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 4499, currency: 'BRL', flag: '🇧🇷' }
+                }
+            },
+            'samsung galaxy s24': {
+                product: 'Samsung Galaxy S24',
+                prices: {
+                    'USA': { price: 799, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 749, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 549000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 1099, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 119800, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 899, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 72999, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 4599, currency: 'BRL', flag: '🇧🇷' }
+                }
+            },
+            'ipad air': {
+                product: 'iPad Air',
+                prices: {
+                    'USA': { price: 599, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 569, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 479000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 799, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 89800, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 749, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 59900, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 3999, currency: 'BRL', flag: '🇧🇷' }
+                }
+            },
+            'sony wh-1000xm5': {
+                product: 'Sony WH-1000XM5 Headphones',
+                prices: {
+                    'USA': { price: 399, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 349, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 299000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 549, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 54780, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 449, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 29990, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 2499, currency: 'BRL', flag: '🇧🇷' }
+                }
+            },
+            'gopro hero 11': {
+                product: 'GoPro Hero 11',
+                prices: {
+                    'USA': { price: 399, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 369, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 299000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 549, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 59800, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 449, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 39990, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 2299, currency: 'BRL', flag: '🇧🇷' }
+                }
+            },
+            'dyson v15': {
+                product: 'Dyson V15 Vacuum',
+                prices: {
+                    'USA': { price: 749, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 599, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 599000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 999, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 108000, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 749, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 69990, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 4999, currency: 'BRL', flag: '🇧🇷' }
+                }
+            },
+            'airpods pro': {
+                product: 'Apple AirPods Pro',
+                prices: {
+                    'USA': { price: 249, currency: 'USD', flag: '🇺🇸' },
+                    'UK': { price: 229, currency: 'GBP', flag: '🇬🇧' },
+                    'Nigeria': { price: 199000, currency: 'NGN', flag: '🇳🇬' },
+                    'Canada': { price: 329, currency: 'CAD', flag: '🇨🇦' },
+                    'Japan': { price: 39800, currency: 'JPY', flag: '🇯🇵' },
+                    'Germany': { price: 299, currency: 'EUR', flag: '🇩🇪' },
+                    'India': { price: 20900, currency: 'INR', flag: '🇮🇳' },
+                    'Brazil': { price: 1799, currency: 'BRL', flag: '🇧🇷' }
+                }
+            }
+        };
+
+        // Exchange rates (approximate USD as base)
+        const exchangeRates = {
+            'USD': 1,
+            'GBP': 1.27,
+            'NGN': 0.00065,
+            'CAD': 0.74,
+            'JPY': 0.0068,
+            'EUR': 1.09,
+            'INR': 0.012,
+            'BRL': 0.20
+        };
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const suggestionPills = document.querySelectorAll('.suggestion-pill');
+
+        // Search functionality
+        function performSearch() {
+            const query = searchInput.value.toLowerCase().trim();
+            
+            if (!query) {
+                resultsContainer.classList.remove('show');
+                return;
+            }
+
+            // Find matching product
+            let matchedKey = null;
+            for (const key in priceDatabase) {
+                if (key.includes(query) || query.includes(key.split(' ')[0])) {
+                    matchedKey = key;
+                    break;
+                }
+            }
+
+            if (!matchedKey) {
+                displayError(`No pricing data found for "${query}". Try: iPhone 15, MacBook Pro, PlayStation 5, etc.`);
+                return;
+            }
+
+            displayResults(priceDatabase[matchedKey]);
+        }
+
+        function displayError(message) {
+            resultsContainer.innerHTML = `<div class="error-message">⚠️ ${message}</div>`;
+            resultsContainer.classList.add('show');
+        }
+
+        function displayResults(data) {
+            const prices = data.prices;
+            
+            // Convert all prices to USD for comparison
+            const pricesInUSD = {};
+            for (const [country, info] of Object.entries(prices)) {
+                const rate = exchangeRates[info.currency];
+                pricesInUSD[country] = info.price * rate;
+            }
+
+            // Find cheapest and most expensive
+            const sorted = Object.entries(pricesInUSD).sort((a, b) => a[1] - b[1]);
+            const cheapestCountry = sorted[0][0];
+            const cheapestPrice = sorted[0][1];
+            const mostExpensiveCountry = sorted[sorted.length - 1][0];
+            const mostExpensivePrice = sorted[sorted.length - 1][1];
+            const priceDifference = mostExpensivePrice - cheapestPrice;
+            const percentageDiff = ((priceDifference / cheapestPrice) * 100).toFixed(1);
+
+            // Build HTML
+            let html = `
+                <div class="product-name">${data.product}</div>
+                
+                <div class="quick-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Cheapest</div>
+                        <div class="stat-value">${cheapestCountry}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Most Expensive</div>
+                        <div class="stat-value">${mostExpensiveCountry}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Price Range</div>
+                        <div class="stat-value">${percentageDiff}%</div>
+                    </div>
+                </div>
+
+                <div class="prices-grid">
+            `;
+
+            // Create price cards
+            for (const [country, info] of Object.entries(prices)) {
+                const usdPrice = pricesInUSD[country];
+                const isCheapest = country === cheapestCountry;
+                const difference = usdPrice - cheapestPrice;
+                const diffPercent = ((difference / cheapestPrice) * 100).toFixed(1);
+
+                const barFillPercent = (usdPrice / mostExpensivePrice) * 100;
+                const cardClass = isCheapest ? 'price-card cheapest' : 'price-card';
+                const badgeHTML = isCheapest ? '<div class="cheapest-badge">✓ Cheapest</div>' : '';
+                const fillClass = isCheapest ? 'chart-fill cheapest-fill' : 'chart-fill';
+
+                let comparisonHTML = '';
+                if (!isCheapest) {
+                    const extraPercent = difference > 0 ? `+${diffPercent}%` : '';
+                    comparisonHTML = `
+                        <div class="price-comparison">
+                            <span class="expensive">+$${difference.toFixed(2)} ${extraPercent} vs cheapest</span>
+                        </div>
+                    `;
+                } else {
+                    comparisonHTML = `
+                        <div class="price-comparison">
+                            <span class="savings">You save up to $${(mostExpensivePrice - cheapestPrice).toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="${cardClass}">
+                        ${badgeHTML}
+                        <div class="country-flag">${info.flag}</div>
+                        <div class="country-name">${country}</div>
+                        <div class="country-code">${info.currency}</div>
+                        <div class="price-amount">${info.price.toLocaleString()}</div>
+                        <div class="currency">${info.currency}</div>
+                        <div class="chart-bar">
+                            <div class="${fillClass}" style="width: ${barFillPercent}%"></div>
+                        </div>
+                        ${comparisonHTML}
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+
+            resultsContainer.innerHTML = html;
+            resultsContainer.classList.add('show');
+        }
+
+        // Event listeners
+        searchBtn.addEventListener('click', performSearch);
+        
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        suggestionPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                searchInput.value = pill.dataset.search;
+                performSearch();
+            });
+        });
+
+        // Focus on input on load
+        searchInput.focus();
+    </script>
+</body>
+</html>
